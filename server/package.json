@@ -1,0 +1,23 @@
+{
+  "name": "dablot-prejjesne",
+  "version": "0.0.1",
+  "description": "A implementation of the Sami game Dablot Prejjesne",
+  "scripts": {
+    "webpack": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bufferutil": "^4.0.6",
+    "socket.io": "^4.5.1",
+    "ts-loader": "^9.3.0",
+    "typescript": "^4.7.2",
+    "utf-8-validate": "^5.0.9",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.5.0"
+  }
+}

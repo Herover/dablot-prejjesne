@@ -1,3 +1,134 @@
+import { PieceType, type Piece } from "./components/GameDefs";
+
+export function initPieces() {
+  const pieces: Piece[] = [];
+  let i = 0;
+
+  [
+    "0,0",
+    "1,0",
+    "2,0",
+    "3,0",
+    "4,0",
+    "5,0",
+    "0,1",
+    "1,1",
+    "2,1",
+    "3,1",
+    "4,1",
+    "5,1",
+    "0,2",
+    "1,2",
+    "2,2",
+    "3,2",
+    "4,2",
+    "5,2",
+    "0.5,0.5",
+    "1.5,0.5",
+    "2.5,0.5",
+    "3.5,0.5",
+    "4.5,0.5",
+    "0.5,1.5",
+    "1.5,1.5",
+    "2.5,1.5",
+    "3.5,1.5",
+    "4.5,1.5",
+  ].forEach((p) => {
+    const [xs, ys] = p.split(",");
+    pieces.push({
+      id: i,
+      type: PieceType.LOW,
+      x: Number.parseFloat(xs),
+      y: Number.parseFloat(ys),
+      rawX: 0,
+      rawY: 0,
+      color: 0,
+    });
+  });
+
+  [
+    "0,4",
+    "1,4",
+    "2,4",
+    "3,4",
+    "4,4",
+    "5,4",
+    "0,5",
+    "1,5",
+    "2,5",
+    "3,5",
+    "4,5",
+    "5,5",
+    "0,6",
+    "1,6",
+    "2,6",
+    "3,6",
+    "4,6",
+    "5,6",
+    "0.5,4.5",
+    "1.5,4.5",
+    "2.5,4.5",
+    "3.5,4.5",
+    "4.5,4.5",
+    "0.5,5.5",
+    "1.5,5.5",
+    "2.5,5.5",
+    "3.5,5.5",
+    "4.5,5.5",
+  ].forEach((p) => {
+    const [xs, ys] = p.split(",");
+    pieces.push({
+      id: i,
+      type: PieceType.LOW,
+      x: Number.parseFloat(xs),
+      y: Number.parseFloat(ys),
+      rawX: 0,
+      rawY: 0,
+      color: 1,
+    });
+  });
+
+  pieces.push({
+    id: ++i,
+    type: PieceType.HIGH,
+    x: 5,
+    y: 3,
+    rawX: 0,
+    rawY: 0,
+    color: 1,
+  });
+  pieces.push({
+    id: ++i,
+    type: PieceType.MEDIUM,
+    x: 4.5,
+    y: 3.5,
+    rawX: 0,
+    rawY: 0,
+    color: 1,
+  });
+
+  pieces.push({
+    id: ++i,
+    type: PieceType.HIGH,
+    x: 0,
+    y: 3,
+    rawX: 0,
+    rawY: 0,
+    color: 0,
+  });
+  pieces.push({
+    id: ++i,
+    type: PieceType.MEDIUM,
+    x: 0.5,
+    y: 2.5,
+    rawX: 0,
+    rawY: 0,
+    color: 0,
+  });
+
+  return pieces;
+}
+
 /* eslint-disable */
 export const board: { [key in string]: string[] } = {
   //       RGT    LFT    RGTDWN     LFTDWN     DWN    RGTUP      LFTUP      UP

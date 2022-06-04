@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { io, Socket } from "socket.io-client";
-import { board } from "../board";
+import { board, initPieces } from "../board";
 import type { Piece } from "./GameDefs";
 
 const props = defineProps<{
@@ -35,22 +35,7 @@ const links = Object.keys(board).reduce<number[][][]>((links, key) => {
   return links;
 }, []);
 
-let pieces: Piece[] = [
-  reactive({
-    id: 0,
-    x: 1,
-    y: 0,
-    rawX: 0,
-    rawY: 0,
-  }),
-  reactive({
-    id: 1,
-    x: 1,
-    y: 1,
-    rawX: 0,
-    rawY: 0,
-  }),
-];
+let pieces: Piece[] = initPieces().map((e) => reactive(e));
 
 const boardWidth = 600;
 const pointRadius = 10;
@@ -234,7 +219,16 @@ onUnmounted(() => {
         @mouseup="(e) => pieceDropped(e, piece)"
         @mouseleave="(e) => pieceDropped(e, piece)"
       >
-        <circle r="17" cx="0" cy="0" fill="hsla(240, 100%, 37%, 1)"></circle>
+        <circle
+          :fill="
+            piece.color == 0
+              ? 'hsla(33.6, 100%, 50%, 1)'
+              : 'hsla(320, 100%, 47%, 1)'
+          "
+          :r="17 + (piece.type - 1) * 3"
+          cx="0"
+          cy="0"
+        ></circle>
         <circle
           :r="selectedPieceId == piece.id ? scale * 10 : scale / 2"
           cx="0"

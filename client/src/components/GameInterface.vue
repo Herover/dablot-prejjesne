@@ -8,7 +8,9 @@ const props = defineProps<{
   gameId: string;
 }>();
 
-let socket: Socket;
+// These typedefs come from the shared .d.ts files and are unknown to eslint
+// eslint-disable-next-line no-undef
+let socket: Socket<GameServerToClientEvents, GameClientToServerEvents>;
 const connected = ref(false);
 
 const coordinates = Object.keys(board).map((e) => {

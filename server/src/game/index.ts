@@ -1,6 +1,6 @@
 import { Namespace } from "socket.io";
 
-export default (io: Namespace) => {
+export default (io: Namespace<GameClientToServerEvents, GameServerToClientEvents, GameInterServerEvents, GameSocketData>) => {
     io.on("connection", socket => {
       console.log(`ns connect ${socket.id}`);
 

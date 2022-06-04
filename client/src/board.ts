@@ -1,4 +1,4 @@
-// eslint-disable
+/* eslint-disable */
 export const board: { [key in string]: string[] } = {
   //       RGT    LFT    RGTDWN     LFTDWN     DWN    RGTUP      LFTUP      UP
   "0,0": ["1,0",        "0.5,0.5",            "0,1"                             ],

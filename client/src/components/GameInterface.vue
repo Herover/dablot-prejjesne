@@ -11,8 +11,6 @@ const props = defineProps<{
 let socket: Socket;
 const connected = ref(false);
 
-//const board: { [key in string]: string[] } =
-
 const coordinates = Object.keys(board).map((e) => {
   const [sx, sy] = e.split(",");
   return [Number.parseFloat(sx), Number.parseFloat(sy)];
@@ -172,7 +170,6 @@ const networkUpdatePiece = (piece: Piece) => {
 };
 
 onMounted(() => {
-  console.log(boardHolder, boardHolder.value);
   socket = io("http://localhost:4000/game");
 
   socket.on("connect", () => {
@@ -218,8 +215,7 @@ onUnmounted(() => {
         :y1="link[0][1] * scale"
         :x2="link[1][0] * scale"
         :y2="link[1][1] * scale"
-        stroke="hsla(160, 100%, 37%, 1)"
-        stroke-width="4"
+        style="stroke: hsla(160, 100%, 37%, 1); stroke-width: 4"
       ></line>
       <circle
         v-for="(coordinate, i) in coordinates"

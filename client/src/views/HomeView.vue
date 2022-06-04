@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Game from "@/components/Game.vue";
+import GameInterface from "@/components/GameInterface.vue";
 </script>
 
 <template>
   <main>
-    <Game :gameId="'1'" />
+    <GameInterface :gameId="'1'" />
   </main>
 </template>

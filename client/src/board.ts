@@ -36,7 +36,7 @@ export function initPieces() {
   ].forEach((p) => {
     const [xs, ys] = p.split(",");
     pieces.push({
-      id: i,
+      id: ++i,
       type: PieceType.LOW,
       x: Number.parseFloat(xs),
       y: Number.parseFloat(ys),
@@ -78,7 +78,7 @@ export function initPieces() {
   ].forEach((p) => {
     const [xs, ys] = p.split(",");
     pieces.push({
-      id: i,
+      id: ++i,
       type: PieceType.LOW,
       x: Number.parseFloat(xs),
       y: Number.parseFloat(ys),

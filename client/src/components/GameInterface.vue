@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { io, Socket } from "socket.io-client";
 import { board, initPieces } from "../board";
-import type { Piece } from "./GameDefs";
+import { MoveType, type Move, type Piece } from "./GameDefs";
 
 const props = defineProps<{
   gameId: string;
@@ -64,6 +64,51 @@ pieces.forEach((p) => {
   updatePieceRawPosition(p);
 });
 
+const getValidMoves = (piece: Piece) => {
+  const posStr = `${piece.x},${piece.y}`;
+  const attackMoves: Move[] = [];
+  const candidates: Move[] = board[posStr]
+    .filter((candidate) => {
+      const onCandidate = pieces.find((p) => candidate == `${p.x},${p.y}`);
+      // If there's a enemy piece on the move candidate, check if we can attack it
+      if (onCandidate) {
+        if (
+          onCandidate.color != piece.color &&
+          onCandidate.type <= piece.type
+        ) {
+          const attackX = piece.x + (onCandidate.x - piece.x) * 2;
+          const attackY = piece.y + (onCandidate.y - piece.y) * 2;
+          const attackPos = `${attackX},${attackY}`;
+          if (
+            board[attackPos] &&
+            !pieces.find((p) => attackPos == `${p.x},${p.y}`)
+          ) {
+            attackMoves.push({
+              type: MoveType.ATTACK,
+              x: attackX,
+              y: attackY,
+              key: attackPos,
+            });
+          }
+        }
+        return false;
+      } else {
+        return true;
+      }
+    })
+    .map((m) => {
+      const [x, y] = m.split(",");
+      return {
+        type: MoveType.MOVE,
+        x: Number.parseFloat(x),
+        y: Number.parseFloat(y),
+        key: m,
+      };
+    });
+
+  return [...candidates, ...attackMoves];
+};
+
 const getMousePositionOnBoard = (e: MouseEvent) => {
   if (boardHolder.value === null) {
     return { x: 0, y: 0 };
@@ -110,16 +155,17 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
 
   selectedPieceId.value = -1;
 
-  const oldBoardPos = `${piece.x},${piece.y}`;
-
   // Find approximate position on board
   let newX = Math.round((piece.rawX / scale) * 2) / 2;
   let newY = Math.round((piece.rawY / scale) * 2) / 2;
   let newBoardPos = `${newX},${newY}`;
 
-  if (board[oldBoardPos] && board[oldBoardPos].includes(newBoardPos)) {
-    piece.x = newX;
-    piece.y = newY;
+  const moves = getValidMoves(piece);
+
+  let m;
+  if ((m = moves.find((m) => m.key == newBoardPos))) {
+    piece.x = m.x;
+    piece.y = m.y;
 
     moved = true;
   } else {
@@ -130,9 +176,9 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
     newY = Math.round(piece.rawY / scale);
     newBoardPos = `${newX},${newY}`;
 
-    if (board[oldBoardPos] && board[oldBoardPos].includes(newBoardPos)) {
-      piece.x = newX;
-      piece.y = newY;
+    if ((m = moves.find((m) => m.key == newBoardPos))) {
+      piece.x = m.x;
+      piece.y = m.y;
 
       moved = true;
     }

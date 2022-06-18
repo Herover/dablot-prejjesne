@@ -1,17 +1,28 @@
 <script setup lang="ts">
+// These typedefs come from the shared .d.ts files and are unknown to eslint
+/* eslint-disable no-undef */
 import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { io, Socket } from "socket.io-client";
 import { board, initPieces } from "../board";
-import { MoveType, type Move, type Piece } from "./GameDefs";
+import type { Piece } from "./GameDefs";
+import {
+  MoveType,
+  type Game,
+  type GameClientToServerEvents,
+  type GameServerToClientEvents,
+  type Move,
+  type Player,
+} from "io";
 
 const props = defineProps<{
   gameId: string;
 }>();
 
-// These typedefs come from the shared .d.ts files and are unknown to eslint
-// eslint-disable-next-line no-undef
 let socket: Socket<GameServerToClientEvents, GameClientToServerEvents>;
 const connected = ref(false);
+const turn = ref(0);
+const player = ref<Player>({ name: "", color: -1 });
+const game = ref<Game | null>(null);
 
 const coordinates = Object.keys(board).map((e) => {
   const [sx, sy] = e.split(",");
@@ -85,6 +96,7 @@ const getValidMoves = (piece: Piece) => {
           ) {
             attackMoves.push({
               type: MoveType.ATTACK,
+              id: piece.id,
               x: attackX,
               y: attackY,
               key: attackPos,
@@ -100,6 +112,7 @@ const getValidMoves = (piece: Piece) => {
       const [x, y] = m.split(",");
       return {
         type: MoveType.MOVE,
+        id: piece.id,
         x: Number.parseFloat(x),
         y: Number.parseFloat(y),
         key: m,
@@ -151,6 +164,12 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
     return;
   }
 
+  if (piece.color !== player.value.color) {
+    updatePieceRawPosition(piece);
+    selectedPieceId.value = -1;
+    return;
+  }
+
   let moved = false;
 
   selectedPieceId.value = -1;
@@ -162,7 +181,7 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
 
   const moves = getValidMoves(piece);
 
-  let m;
+  let m: Move | undefined;
   if ((m = moves.find((m) => m.key == newBoardPos))) {
     piece.x = m.x;
     piece.y = m.y;
@@ -189,17 +208,14 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
 
   updatePieceRawPosition(piece);
 
-  if (moved) {
-    networkUpdatePiece(piece);
+  if (moved && m) {
+    networkUpdatePiece(m);
+    turn.value = (turn.value + 1) % 2;
   }
 };
 
-const networkUpdatePiece = (piece: Piece) => {
-  socket.emit("move", {
-    id: piece.id,
-    x: piece.x,
-    y: piece.y,
-  });
+const networkUpdatePiece = (move: Move) => {
+  socket.emit("move", move);
 };
 
 onMounted(() => {
@@ -211,17 +227,40 @@ onMounted(() => {
   socket.on("disconnect", () => {
     connected.value = false;
   });
+  // only needed if server forgets client
+  socket.io.on("reconnect", () => {
+    socket.emit("join", { gameId: props.gameId });
+  });
 
-  socket.on("move", ({ id, x, y }) => {
-    console.log("MOVE", id, x, y);
-    const piece = pieces.find((p) => p.id === id);
+  socket.on("move", (move) => {
+    console.log("MOVE", move.id, move.x, move.y);
+    const piece = pieces.find((p) => p.id === move.id);
     if (!piece) {
-      console.error(`Piece ${id} not found!`);
+      console.error(`Piece ${move.id} not found!`);
       return;
     }
-    piece.x = x;
-    piece.y = y;
-    updatePieceRawPosition(piece);
+    const validMoves = getValidMoves(piece);
+    if (
+      validMoves.find(
+        (m) => m.x == move.x && move.y == m.y && m.type == move.type
+      )
+    ) {
+      piece.x = move.x;
+      piece.y = move.y;
+      updatePieceRawPosition(piece);
+    } else {
+      console.warn("Recieved invalid move", move);
+    }
+  });
+
+  socket.on("player", (playerData) => {
+    console.log("player", playerData);
+    player.value = playerData;
+  });
+
+  socket.on("game", (gameData) => {
+    console.log("game", gameData);
+    game.value = gameData;
   });
 
   socket.emit("join", { gameId: props.gameId });
@@ -233,8 +272,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <p v-if="connected">Online</p>
-  <p v-else>Disconnected</p>
+  <p>
+    <span v-if="connected">Online</span>
+    <span v-else>Disconnected</span>
+    <br />
+    <span>Color is {{ player.color }}</span>
+  </p>
 
   <svg :width="boardWidth" :height="boardHeight">
     <g

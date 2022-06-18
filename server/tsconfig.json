@@ -9,6 +9,7 @@
     "moduleResolution": "node",
     "typeRoots": [
       "../shared"
-    ]
-  }
+    ],
+  },
+  "include": ["../shared/io/io.d.ts"]
 }

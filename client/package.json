@@ -13,6 +13,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "io": "file:../shared/io",
     "pinia": "^2.0.14",
     "socket.io-client": "^4.5.0",
     "vue": "^3.2.36",

@@ -33,18 +33,6 @@ export interface Piece {
   type: PieceType;
 }
 
-export enum MoveType {
-  MOVE = 1,
-  ATTACK = 2,
-}
-
-export interface Move {
-  type: MoveType;
-  x: number;
-  y: number;
-  key: string;
-}
-
-export interface Player {
+/* export interface Player {
   color: number;
-}
+} */

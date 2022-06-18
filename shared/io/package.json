@@ -1,5 +1,6 @@
 {
     "name": "io",
+    "main": "main.ts",
     "version": "1.0.0",
-    "typings": "io.d.ts"
+    "typings": "io.ts"
 }

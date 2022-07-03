@@ -308,7 +308,9 @@ onUnmounted(() => {
     <span v-if="connected">Online</span>
     <span v-else>Disconnected</span>
     <br />
-    <span>Color is {{ player.color }}</span>
+    Color is
+    <span :style="'color: ' + colors[player.color]">{{ player.color }}</span>
+    Turn is is <span :style="'color: ' + colors[turn]">{{ turn }}</span>
   </p>
 
   <svg :width="boardWidth" :height="boardHeight">
@@ -343,11 +345,7 @@ onUnmounted(() => {
         @mouseleave="(e) => pieceDropped(e, piece)"
       >
         <circle
-          :fill="
-            piece.color == 0
-              ? 'hsla(33.6, 100%, 50%, 1)'
-              : 'hsla(320, 100%, 47%, 1)'
-          "
+          :fill="colors[piece.color]"
           :r="17 + (piece.type - 1) * 3"
           cx="0"
           cy="0"

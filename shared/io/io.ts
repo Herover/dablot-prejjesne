@@ -32,6 +32,8 @@ export interface Game {
 export enum MoveType {
   MOVE = 1,
   ATTACK = 2,
+  ENDMOVE = 3,
+  SURRENDER = 4,
 }
 
 export interface Move {

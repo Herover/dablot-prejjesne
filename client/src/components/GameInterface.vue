@@ -23,6 +23,7 @@ const colors = ["hsla(33.6, 100%, 50%, 1)", "hsla(320, 100%, 47%, 1)"];
 let socket: Socket<GameServerToClientEvents, GameClientToServerEvents>;
 const connected = ref(false);
 const turn = ref(0);
+const expectAttackMove = ref(false);
 const player = ref<Player>({ name: "", color: -1 });
 const game = ref<Game | null>(null);
 
@@ -109,7 +110,9 @@ const getValidMoves = (piece: Piece) => {
         }
         return false;
       } else {
-        return true;
+        if (!expectAttackMove.value) {
+          return true;
+        }
       }
     })
     .map((m) => {
@@ -222,6 +225,12 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
 };
 
 const executeMove = (move: Move, piece?: Piece) => {
+  if (move.type == MoveType.ENDMOVE) {
+    turn.value = (turn.value + 1) % 2;
+    expectAttackMove.value = false;
+    return;
+  }
+
   if (!piece) {
     piece = pieces.find((p) => p.id === move.id);
   }
@@ -249,6 +258,7 @@ const executeMove = (move: Move, piece?: Piece) => {
       }
 
       pieces.splice(attackIndex, 1);
+      expectAttackMove.value = true;
 
       console.log(move.attackX, move.attackY, attackIndex);
     }
@@ -256,7 +266,10 @@ const executeMove = (move: Move, piece?: Piece) => {
     piece.y = move.y;
     updatePieceRawPosition(piece);
 
-    turn.value = (turn.value + 1) % 2;
+    if (move.type !== MoveType.ATTACK) {
+      turn.value = (turn.value + 1) % 2;
+      expectAttackMove.value = false;
+    }
   } else {
     console.warn("Invalid move", move);
   }
@@ -265,6 +278,18 @@ const executeMove = (move: Move, piece?: Piece) => {
 const networkUpdatePiece = (move: Move) => {
   socket.emit("move", move);
 };
+
+const endMove = () => {
+  const move: Move = {
+    type: MoveType.ENDMOVE,
+    x: 0,
+    y: 0,
+    id: 0,
+    key: "",
+  };
+  executeMove(move);
+  socket.emit("move", move);
+}
 
 onMounted(() => {
   socket = io("http://localhost:4000/game");
@@ -282,6 +307,11 @@ onMounted(() => {
 
   socket.on("move", (move) => {
     console.log("MOVE", move.id, move.x, move.y);
+    if (turn.value == player.value.color) {
+      throw new Error(
+        "Recieved opponent move while waiting for local player move"
+      );
+    }
     executeMove(move);
   });
 
@@ -311,6 +341,12 @@ onUnmounted(() => {
     Color is
     <span :style="'color: ' + colors[player.color]">{{ player.color }}</span>
     Turn is is <span :style="'color: ' + colors[turn]">{{ turn }}</span>
+    <button
+      @click="endMove"
+      :disabled="!(expectAttackMove && turn == player.color)"
+    >
+      End move
+    </button>
   </p>
 
   <svg :width="boardWidth" :height="boardHeight">

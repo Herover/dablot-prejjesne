@@ -39,10 +39,10 @@ export default (io: Namespace<GameClientToServerEvents, GameServerToClientEvents
         io.to(gid).emit("game", game);
       });
 
-      socket.on("move", ({ key, x, y, type, id }) => {
+      socket.on("move", ({ key, x, y, type, id, attackX, attackY }) => {
         console.log(`${key} to ${x},${y}`)
 
-        socket.to(gameId).emit("move", { key, x, y, type, id })
+        socket.to(gameId).emit("move", { key, x, y, type, id, attackX, attackY })
       })
     });
 

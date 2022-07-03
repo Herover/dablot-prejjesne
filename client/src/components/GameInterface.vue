@@ -18,6 +18,8 @@ const props = defineProps<{
   gameId: string;
 }>();
 
+const colors = ["hsla(33.6, 100%, 50%, 1)", "hsla(320, 100%, 47%, 1)"];
+
 let socket: Socket<GameServerToClientEvents, GameClientToServerEvents>;
 const connected = ref(false);
 const turn = ref(0);
@@ -100,6 +102,8 @@ const getValidMoves = (piece: Piece) => {
               x: attackX,
               y: attackY,
               key: attackPos,
+              attackX: onCandidate.x,
+              attackY: onCandidate.y,
             });
           }
         }
@@ -170,6 +174,12 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
     return;
   }
 
+  if (turn.value !== player.value.color) {
+    updatePieceRawPosition(piece);
+    selectedPieceId.value = -1;
+    return;
+  }
+
   let moved = false;
 
   selectedPieceId.value = -1;
@@ -183,8 +193,7 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
 
   let m: Move | undefined;
   if ((m = moves.find((m) => m.key == newBoardPos))) {
-    piece.x = m.x;
-    piece.y = m.y;
+    executeMove(m, piece);
 
     moved = true;
   } else {
@@ -196,8 +205,7 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
     newBoardPos = `${newX},${newY}`;
 
     if ((m = moves.find((m) => m.key == newBoardPos))) {
-      piece.x = m.x;
-      piece.y = m.y;
+      executeMove(m, piece);
 
       moved = true;
     }
@@ -210,7 +218,47 @@ const pieceDropped = (e: MouseEvent, piece: Piece) => {
 
   if (moved && m) {
     networkUpdatePiece(m);
+  }
+};
+
+const executeMove = (move: Move, piece?: Piece) => {
+  if (!piece) {
+    piece = pieces.find((p) => p.id === move.id);
+  }
+  if (!piece) {
+    throw new Error(`Piece ${move.id} not found`);
+  }
+
+  const validMoves = getValidMoves(piece);
+  if (
+    validMoves.find(
+      (m) =>
+        m.x == move.x &&
+        move.y == m.y &&
+        m.type == move.type &&
+        m.attackX == move.attackX &&
+        m.attackY == move.attackY
+    )
+  ) {
+    if (move.type == MoveType.ATTACK) {
+      const attackIndex = pieces.findIndex(
+        (p) => p.x == move.attackX && p.y == move.attackY
+      );
+      if (attackIndex == -1) {
+        throw new Error(`Nothing to attack at ${move.attackX},${move.attackY}`);
+      }
+
+      pieces.splice(attackIndex, 1);
+
+      console.log(move.attackX, move.attackY, attackIndex);
+    }
+    piece.x = move.x;
+    piece.y = move.y;
+    updatePieceRawPosition(piece);
+
     turn.value = (turn.value + 1) % 2;
+  } else {
+    console.warn("Invalid move", move);
   }
 };
 
@@ -234,23 +282,7 @@ onMounted(() => {
 
   socket.on("move", (move) => {
     console.log("MOVE", move.id, move.x, move.y);
-    const piece = pieces.find((p) => p.id === move.id);
-    if (!piece) {
-      console.error(`Piece ${move.id} not found!`);
-      return;
-    }
-    const validMoves = getValidMoves(piece);
-    if (
-      validMoves.find(
-        (m) => m.x == move.x && move.y == m.y && m.type == move.type
-      )
-    ) {
-      piece.x = move.x;
-      piece.y = move.y;
-      updatePieceRawPosition(piece);
-    } else {
-      console.warn("Recieved invalid move", move);
-    }
+    executeMove(move);
   });
 
   socket.on("player", (playerData) => {

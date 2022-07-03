@@ -40,4 +40,6 @@ export interface Move {
   x: number;
   y: number;
   key: string;
+  attackX?: number;
+  attackY?: number;
 }

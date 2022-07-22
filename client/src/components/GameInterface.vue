@@ -13,6 +13,7 @@ import {
   type Move,
   type Player,
 } from "io";
+import { SERVER_GAME_URL } from "@/settings";
 
 const props = defineProps<{
   gameId: string;
@@ -292,7 +293,7 @@ const endMove = () => {
 };
 
 onMounted(() => {
-  socket = io("http://localhost:4000/game");
+  socket = io(SERVER_GAME_URL);
 
   socket.on("connect", () => {
     connected.value = true;

@@ -289,7 +289,7 @@ const endMove = () => {
   };
   executeMove(move);
   socket.emit("move", move);
-}
+};
 
 onMounted(() => {
   socket = io("http://localhost:4000/game");

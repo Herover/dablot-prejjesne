@@ -7,9 +7,6 @@
     "jsx": "react",
     "allowJs": true,
     "moduleResolution": "node",
-    "typeRoots": [
-      "../shared"
-    ],
   },
-  "include": ["../shared/io/io.d.ts"]
+  "include": ["src/**.ts"]
 }

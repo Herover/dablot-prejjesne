@@ -1,0 +1,17 @@
+services:
+  server:
+    environment:
+      - "ORIGIN=${ORIGIN:-http://localhost:${CLIENT_PORT:-3000}}"
+      - "PORT=${SERVER_PORT:-4000}"
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "${SERVER_PORT:-4000}:4000"
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    ports:
+      - "${CLIENT_PORT:-3000}:80"

@@ -1,12 +1,13 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { ORIGIN, PORT } from "./config";
 import game from "./game/index";
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
   serveClient: false,
   cors: {
-    origin: "http://localhost:3000"
+    origin: ORIGIN
   },
 });
 
@@ -20,5 +21,5 @@ io.on("connection", socket => {
 
 game(io.of("/game"));
 
-console.log("starting on port 4000");
-io.listen(4000);
+console.log(`starting on port ${PORT}`);
+io.listen(PORT);

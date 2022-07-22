@@ -1,0 +1,11 @@
+FROM node:14
+
+WORKDIR /app
+
+COPY . .
+
+RUN cd server && npm install && npm run webpack
+
+EXPOSE 4000
+
+CMD [ "node", "/app/server/dist/bundle.js" ]
